@@ -56,13 +56,63 @@
             position: relative;
         }
 
-        .cell[data-piece='w']::before {
-            content: attr(data-piece);
+        .cell[data-piece='♜']::before {
+            content: '♜';
             color: black; /* Black pieces for white side */
         }
 
-        .cell[data-piece='b']::before {
-            content: attr(data-piece);
+        .cell[data-piece='♞']::before {
+            content: '♞';
+            color: black; /* Black pieces for white side */
+        }
+
+        .cell[data-piece='♝']::before {
+            content: '♝';
+            color: black; /* Black pieces for white side */
+        }
+
+        .cell[data-piece='♛']::before {
+            content: '♛';
+            color: black; /* Black pieces for white side */
+        }
+
+        .cell[data-piece='♚']::before {
+            content: '♚';
+            color: black; /* Black pieces for white side */
+        }
+
+        .cell[data-piece='♟']::before {
+            content: '♟';
+            color: black; /* Black pieces for white side */
+        }
+
+        .cell[data-piece='♖']::before {
+            content: '♖';
+            color: white; /* White pieces for black side */
+        }
+
+        .cell[data-piece='♘']::before {
+            content: '♘';
+            color: white; /* White pieces for black side */
+        }
+
+        .cell[data-piece='♗']::before {
+            content: '♗';
+            color: white; /* White pieces for black side */
+        }
+
+        .cell[data-piece='♕']::before {
+            content: '♕';
+            color: white; /* White pieces for black side */
+        }
+
+        .cell[data-piece='♔']::before {
+            content: '♔';
+            color: white; /* White pieces for black side */
+        }
+
+        .cell[data-piece='♙']::before {
+            content: '♙';
             color: white; /* White pieces for black side */
         }
 
@@ -114,14 +164,14 @@
         </tr>
         <tr>
             <th>7</th>
-            <td class="cell" data-pos="a7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="b7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="c7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="d7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="e7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="f7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="g7" data-piece="♟︎"></td>
-            <td class="cell" data-pos="h7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="a7" data-piece="♟"></td>
+            <td class="cell" data-pos="b7" data-piece="♟"></td>
+            <td class="cell" data-pos="c7" data-piece="♟"></td>
+            <td class="cell" data-pos="d7" data-piece="♟"></td>
+            <td class="cell" data-pos="e7" data-piece="♟"></td>
+            <td class="cell" data-pos="f7" data-piece="♟"></td>
+            <td class="cell" data-pos="g7" data-piece="♟"></td>
+            <td class="cell" data-pos="h7" data-piece="♟"></td>
             <th>7</th>
         </tr>
         <tr>
@@ -228,6 +278,7 @@
             if (move !== null) {
                 resetBoardColors();
                 updateStatus();
+                renderBoard();
             } else {
                 alert('Invalid move! Try again.');
             }
@@ -240,6 +291,7 @@
                 chess.reset();
                 resetBoard();
                 updateStatus();
+                renderBoard();
             }
         }
 
@@ -277,23 +329,31 @@
             chess.reset();
             resetBoard();
             updateStatus();
+            renderBoard();
         }
 
         function resetBoard() {
             document.querySelectorAll('.cell').forEach(cell => {
                 cell.innerHTML = '';
+                cell.setAttribute('data-piece', ''); // Clear data-piece attribute
                 cell.style.backgroundColor = '';
             });
 
             // Set up initial board position
             const startingPosition = chess.fen().split(' ')[0];
             const pieces = {
-                'p': '&#9817;',
-                'r': '&#9814;',
-                'n': '&#9816;',
-                'b': '&#9815;',
-                'q': '&#9813;',
-                'k': '&#9812;'
+                'p': '♟',
+                'r': '♖',
+                'n': '♘',
+                'b': '♗',
+                'q': '♕',
+                'k': '♔',
+                'P': '♙',
+                'R': '♜',
+                'N': '♞',
+                'B': '♝',
+                'Q': '♛',
+                'K': '♚'
             };
 
             startingPosition.split('/').forEach((row, rowIndex) => {
@@ -309,6 +369,34 @@
                             cell.setAttribute('data-piece', piece); // Set data-piece attribute for styling
                         }
                         colIndex++;
+                    }
+                });
+            });
+        }
+
+        function renderBoard() {
+            // Update board with current position
+            const board = chess.board();
+            board.forEach((row, rowIndex) => {
+                row.forEach((piece, colIndex) => {
+                    const cell = document.querySelector(`.cell[data-pos="${String.fromCharCode(97 + colIndex)}${8 - rowIndex}"]`);
+                    if (cell) {
+                        if (piece) {
+                            cell.setAttribute('data-piece', piece.type === 'p' ? '♟' :
+                                                        piece.type === 'r' ? '♜' :
+                                                        piece.type === 'n' ? '♞' :
+                                                        piece.type === 'b' ? '♝' :
+                                                        piece.type === 'q' ? '♛' :
+                                                        piece.type === 'k' ? '♚' :
+                                                        piece.type === 'P' ? '♙' :
+                                                        piece.type === 'R' ? '♖' :
+                                                        piece.type === 'N' ? '♘' :
+                                                        piece.type === 'B' ? '♗' :
+                                                        piece.type === 'Q' ? '♕' :
+                                                        piece.type === 'K' ? '♔' : '');
+                        } else {
+                            cell.setAttribute('data-piece', '');
+                        }
                     }
                 });
             });
