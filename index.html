@@ -28,11 +28,23 @@
         th:first-child, th:last-child {
             width: 50px;
         }
+        .controls {
+            margin: 20px;
+        }
+        .status {
+            margin: 10px;
+            font-size: 20px;
+        }
     </style>
     <!-- Include the chess.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 </head>
 <body>
+    <div class="controls">
+        <button id="resign">Resign</button>
+        <button id="draw">Draw</button>
+        <div class="status" id="status"></div>
+    </div>
     <table>
         <tr>
             <th></th>
@@ -159,6 +171,7 @@
     <script>
         const chess = new Chess();
         let selectedCell = null;
+        const statusElement = document.getElementById('status');
 
         document.querySelectorAll('.cell').forEach(cell => {
             cell.addEventListener('click', () => {
@@ -172,6 +185,17 @@
             });
         });
 
+        document.getElementById('resign').addEventListener('click', () => {
+            const winner = chess.turn() === 'w' ? 'Black' : 'White';
+            alert(`${winner} wins by resignation.`);
+            resetGame();
+        });
+
+        document.getElementById('draw').addEventListener('click', () => {
+            alert('The game is a draw.');
+            resetGame();
+        });
+
         function movePiece(fromCell, toCell) {
             const fromPos = fromCell.getAttribute('data-pos');
             const toPos = toCell.getAttribute('data-pos');
@@ -182,9 +206,34 @@
                 fromCell.innerHTML = '';
                 fromCell.style.backgroundColor = '';
                 resetBoardColors();
+                updateStatus();
+
+                // Handle pawn promotion
+                if (move.flags.includes('p')) {
+                    const piece = move.color === 'w' ? '&#9813;' : '&#9819;';
+                    toCell.innerHTML = piece;
+                }
             } else {
                 fromCell.style.backgroundColor = '';
                 selectedCell = null;
+            }
+        }
+
+        function updateStatus() {
+            if (chess.in_checkmate()) {
+                const winner = chess.turn() === 'w' ? 'Black' : 'White';
+                statusElement.innerHTML = `${winner} wins by checkmate.`;
+                alert(`${winner} wins by checkmate.`);
+                resetGame();
+            } else if (chess.in_draw()) {
+                statusElement.innerHTML = 'The game is a draw.';
+                alert('The game is a draw.');
+                resetGame();
+            } else if (chess.in_check()) {
+                const player = chess.turn() === 'w' ? 'White' : 'Black';
+                statusElement.innerHTML = `${player} is in check.`;
+            } else {
+                statusElement.innerHTML = '';
             }
         }
 
@@ -200,6 +249,37 @@
                 }
             });
         }
+
+        function resetGame() {
+            chess.reset();
+            document.querySelectorAll('.cell').forEach(cell => {
+                const pos = cell.getAttribute('data-pos');
+                const piece = chess.get(pos);
+                cell.innerHTML = piece ? pieceToHtml(piece) : '';
+                resetBoardColors();
+            });
+            statusElement.innerHTML = '';
+        }
+
+        function pieceToHtml(piece) {
+            const pieceMap = {
+                p: '&#9817;',
+                r: '&#9814;',
+                n: '&#9816;',
+                b: '&#9815;',
+                q: '&#9813;',
+                k: '&#9812;',
+                P: '&#9823;',
+                R: '&#9820;',
+                N: '&#9822;',
+                B: '&#9821;',
+                Q: '&#9819;',
+                K: '&#9818;'
+            };
+            return pieceMap[piece.type] && piece.color === 'b' ? pieceMap[piece.type].replace('&#98', '&#982') : pieceMap[piece.type];
+        }
+
+        resetGame();
     </script>
 </body>
 </html>
