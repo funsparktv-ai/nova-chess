@@ -4,36 +4,78 @@
     <meta charset="UTF-8">
     <title>Chess Game</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
         table {
             border-collapse: collapse;
             outline: 1px solid black;
+            margin-top: 20px;
         }
-        td {
-            width: 100px;
-            height: 100px;
+
+        th, td {
+            width: 80px;
+            height: 80px;
             text-align: center;
-            font-size: 60px;
+            font-size: 50px;
             cursor: pointer;
         }
+
         th {
             background: lightgray;
+            height: 40px;
         }
+
         tr:nth-child(even) td:nth-child(odd),
         tr:nth-child(odd) td:nth-child(even) {
-            background: gray;
+            background: #bbb;
         }
-        tr:first-child th, tr:last-child th {
-            height: 50px;
-        }
-        th:first-child, th:last-child {
-            width: 50px;
-        }
+
         .controls {
             margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+
         .status {
             margin: 10px;
             font-size: 20px;
+            text-align: center;
+        }
+
+        /* Piece styling */
+        .cell {
+            position: relative;
+        }
+
+        .cell[data-piece='w']::before {
+            content: attr(data-piece);
+            color: black; /* Black pieces for white side */
+        }
+
+        .cell[data-piece='b']::before {
+            content: attr(data-piece);
+            color: white; /* White pieces for black side */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            table {
+                font-size: 30px;
+            }
+
+            th, td {
+                width: 60px;
+                height: 60px;
+            }
         }
     </style>
     <!-- Include the chess.js library -->
@@ -60,26 +102,26 @@
         </tr>
         <tr>
             <th>8</th>
-            <td class="cell" data-pos="a8">&#9820;</td>
-            <td class="cell" data-pos="b8">&#9822;</td>
-            <td class="cell" data-pos="c8">&#9821;</td>
-            <td class="cell" data-pos="d8">&#9819;</td>
-            <td class="cell" data-pos="e8">&#9818;</td>
-            <td class="cell" data-pos="f8">&#9821;</td>
-            <td class="cell" data-pos="g8">&#9822;</td>
-            <td class="cell" data-pos="h8">&#9820;</td>
+            <td class="cell" data-pos="a8" data-piece="♜"></td>
+            <td class="cell" data-pos="b8" data-piece="♞"></td>
+            <td class="cell" data-pos="c8" data-piece="♝"></td>
+            <td class="cell" data-pos="d8" data-piece="♛"></td>
+            <td class="cell" data-pos="e8" data-piece="♚"></td>
+            <td class="cell" data-pos="f8" data-piece="♝"></td>
+            <td class="cell" data-pos="g8" data-piece="♞"></td>
+            <td class="cell" data-pos="h8" data-piece="♜"></td>
             <th>8</th>
         </tr>
         <tr>
             <th>7</th>
-            <td class="cell" data-pos="a7">&#9823;</td>
-            <td class="cell" data-pos="b7">&#9823;</td>
-            <td class="cell" data-pos="c7">&#9823;</td>
-            <td class="cell" data-pos="d7">&#9823;</td>
-            <td class="cell" data-pos="e7">&#9823;</td>
-            <td class="cell" data-pos="f7">&#9823;</td>
-            <td class="cell" data-pos="g7">&#9823;</td>
-            <td class="cell" data-pos="h7">&#9823;</td>
+            <td class="cell" data-pos="a7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="b7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="c7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="d7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="e7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="f7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="g7" data-piece="♟︎"></td>
+            <td class="cell" data-pos="h7" data-piece="♟︎"></td>
             <th>7</th>
         </tr>
         <tr>
@@ -132,26 +174,26 @@
         </tr>
         <tr>
             <th>2</th>
-            <td class="cell" data-pos="a2">&#9817;</td>
-            <td class="cell" data-pos="b2">&#9817;</td>
-            <td class="cell" data-pos="c2">&#9817;</td>
-            <td class="cell" data-pos="d2">&#9817;</td>
-            <td class="cell" data-pos="e2">&#9817;</td>
-            <td class="cell" data-pos="f2">&#9817;</td>
-            <td class="cell" data-pos="g2">&#9817;</td>
-            <td class="cell" data-pos="h2">&#9817;</td>
+            <td class="cell" data-pos="a2" data-piece="♙"></td>
+            <td class="cell" data-pos="b2" data-piece="♙"></td>
+            <td class="cell" data-pos="c2" data-piece="♙"></td>
+            <td class="cell" data-pos="d2" data-piece="♙"></td>
+            <td class="cell" data-pos="e2" data-piece="♙"></td>
+            <td class="cell" data-pos="f2" data-piece="♙"></td>
+            <td class="cell" data-pos="g2" data-piece="♙"></td>
+            <td class="cell" data-pos="h2" data-piece="♙"></td>
             <th>2</th>
         </tr>
         <tr>
             <th>1</th>
-            <td class="cell" data-pos="a1">&#9814;</td>
-            <td class="cell" data-pos="b1">&#9816;</td>
-            <td class="cell" data-pos="c1">&#9815;</td>
-            <td class="cell" data-pos="d1">&#9813;</td>
-            <td class="cell" data-pos="e1">&#9812;</td>
-            <td class="cell" data-pos="f1">&#9815;</td>
-            <td class="cell" data-pos="g1">&#9816;</td>
-            <td class="cell" data-pos="h1">&#9814;</td>
+            <td class="cell" data-pos="a1" data-piece="♖"></td>
+            <td class="cell" data-pos="b1" data-piece="♘"></td>
+            <td class="cell" data-pos="c1" data-piece="♗"></td>
+            <td class="cell" data-pos="d1" data-piece="♕"></td>
+            <td class="cell" data-pos="e1" data-piece="♔"></td>
+            <td class="cell" data-pos="f1" data-piece="♗"></td>
+            <td class="cell" data-pos="g1" data-piece="♘"></td>
+            <td class="cell" data-pos="h1" data-piece="♖"></td>
             <th>1</th>
         </tr>
         <tr>
@@ -170,52 +212,41 @@
 
     <script>
         const chess = new Chess();
-        let selectedCell = null;
         const statusElement = document.getElementById('status');
 
         document.querySelectorAll('.cell').forEach(cell => {
-            cell.addEventListener('click', () => {
-                if (selectedCell) {
-                    movePiece(selectedCell, cell);
-                    selectedCell = null;
-                } else if (cell.innerHTML) {
-                    selectedCell = cell;
-                    cell.style.backgroundColor = 'yellow';
-                }
-            });
+            cell.addEventListener('click', handleCellClick);
         });
 
-        document.getElementById('resign').addEventListener('click', () => {
-            const winner = chess.turn() === 'w' ? 'Black' : 'White';
-            alert(`${winner} wins by resignation.`);
-            resetGame();
-        });
+        document.getElementById('resign').addEventListener('click', resign);
+        document.getElementById('draw').addEventListener('click', draw);
 
-        document.getElementById('draw').addEventListener('click', () => {
-            alert('The game is a draw.');
-            resetGame();
-        });
-
-        function movePiece(fromCell, toCell) {
-            const fromPos = fromCell.getAttribute('data-pos');
-            const toPos = toCell.getAttribute('data-pos');
-            const move = chess.move({ from: fromPos, to: toPos });
-
-            if (move) {
-                toCell.innerHTML = fromCell.innerHTML;
-                fromCell.innerHTML = '';
-                fromCell.style.backgroundColor = '';
+        function handleCellClick(event) {
+            const from = event.target.getAttribute('data-pos');
+            const to = prompt('Enter move:');
+            const move = chess.move({from: from, to: to, promotion: 'q'});
+            if (move !== null) {
                 resetBoardColors();
                 updateStatus();
-
-                // Handle pawn promotion
-                if (move.flags.includes('p')) {
-                    const piece = move.color === 'w' ? '&#9813;' : '&#9819;';
-                    toCell.innerHTML = piece;
-                }
             } else {
-                fromCell.style.backgroundColor = '';
                 alert('Invalid move! Try again.');
+            }
+        }
+
+        function resign() {
+            const result = confirm('Are you sure you want to resign?');
+            if (result) {
+                alert(`Game over, ${chess.turn() === 'w' ? 'Black' : 'White'} wins by resignation.`);
+                chess.reset();
+                resetBoard();
+                updateStatus();
+            }
+        }
+
+        function draw() {
+            const result = confirm('Do you want to offer a draw?');
+            if (result) {
+                alert('Draw offered.');
             }
         }
 
@@ -274,7 +305,9 @@
                         const color = char === char.toUpperCase() ? 'w' : 'b';
                         const piece = pieces[char.toLowerCase()];
                         const cell = document.querySelector(`.cell[data-pos="${String.fromCharCode(97 + colIndex)}${8 - rowIndex}"]`);
-                        if (cell) cell.innerHTML = piece;
+                        if (cell) {
+                            cell.setAttribute('data-piece', piece); // Set data-piece attribute for styling
+                        }
                         colIndex++;
                     }
                 });
