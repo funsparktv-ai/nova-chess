@@ -215,71 +215,74 @@
                 }
             } else {
                 fromCell.style.backgroundColor = '';
-                selectedCell = null;
-            }
-        }
-
-        function updateStatus() {
-            if (chess.in_checkmate()) {
-                const winner = chess.turn() === 'w' ? 'Black' : 'White';
-                statusElement.innerHTML = `${winner} wins by checkmate.`;
-                alert(`${winner} wins by checkmate.`);
-                resetGame();
-            } else if (chess.in_draw()) {
-                statusElement.innerHTML = 'The game is a draw.';
-                alert('The game is a draw.');
-                resetGame();
-            } else if (chess.in_check()) {
-                const player = chess.turn() === 'w' ? 'White' : 'Black';
-                statusElement.innerHTML = `${player} is in check.`;
-            } else {
-                statusElement.innerHTML = '';
+                alert('Invalid move! Try again.');
             }
         }
 
         function resetBoardColors() {
             document.querySelectorAll('.cell').forEach(cell => {
-                const pos = cell.getAttribute('data-pos');
-                const row = pos.charCodeAt(1) - '1'.charCodeAt(0);
-                const col = pos.charCodeAt(0) - 'a'.charCodeAt(0);
-                if ((row + col) % 2 === 0) {
-                    cell.style.backgroundColor = 'gray';
-                } else {
-                    cell.style.backgroundColor = '';
-                }
+                cell.style.backgroundColor = '';
             });
+        }
+
+        function updateStatus() {
+            let status = '';
+
+            if (chess.in_checkmate()) {
+                status = `Game over, ${chess.turn() === 'w' ? 'Black' : 'White'} is in checkmate.`;
+            } else if (chess.in_draw()) {
+                status = 'Game over, drawn position.';
+            } else {
+                status = `${chess.turn() === 'w' ? 'White' : 'Black'} to move`;
+                if (chess.in_check()) {
+                    status += ', ' + (chess.turn() === 'w' ? 'White' : 'Black') + ' is in check';
+                }
+            }
+
+            statusElement.textContent = status;
         }
 
         function resetGame() {
             chess.reset();
+            resetBoard();
+            updateStatus();
+        }
+
+        function resetBoard() {
             document.querySelectorAll('.cell').forEach(cell => {
-                const pos = cell.getAttribute('data-pos');
-                const piece = chess.get(pos);
-                cell.innerHTML = piece ? pieceToHtml(piece) : '';
-                resetBoardColors();
+                cell.innerHTML = '';
+                cell.style.backgroundColor = '';
             });
-            statusElement.innerHTML = '';
-        }
 
-        function pieceToHtml(piece) {
-            const pieceMap = {
-                p: '&#9823;',
-                r: '&#9820;',
-                n: '&#9822;',
-                b: '&#9821;',
-                q: '&#9819;',
-                k: '&#9818;',
-                P: '&#9817;',
-                R: '&#9814;',
-                N: '&#9816;',
-                B: '&#9815;',
-                Q: '&#9813;',
-                K: '&#9812;'
+            // Set up initial board position
+            const startingPosition = chess.fen().split(' ')[0];
+            const pieces = {
+                'p': '&#9817;',
+                'r': '&#9814;',
+                'n': '&#9816;',
+                'b': '&#9815;',
+                'q': '&#9813;',
+                'k': '&#9812;'
             };
-            return pieceMap[piece.type] && piece.color === 'w' ? pieceMap[piece.type].replace('&#982', '&#98') : pieceMap[piece.type];
+
+            startingPosition.split('/').forEach((row, rowIndex) => {
+                let colIndex = 0;
+                row.split('').forEach(char => {
+                    if (!isNaN(char)) {
+                        colIndex += parseInt(char);
+                    } else {
+                        const color = char === char.toUpperCase() ? 'w' : 'b';
+                        const piece = pieces[char.toLowerCase()];
+                        const cell = document.querySelector(`.cell[data-pos="${String.fromCharCode(97 + colIndex)}${8 - rowIndex}"]`);
+                        if (cell) cell.innerHTML = piece;
+                        colIndex++;
+                    }
+                });
+            });
         }
 
-        resetGame();
+        resetBoard();
+        updateStatus();
     </script>
 </body>
 </html>
