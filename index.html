@@ -1,146 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game with Stockfish Bot</title>
+    <meta charset="utf-8">
     <style>
-        /* Chessboard container styles */
-        #board {
-            width: 400px;
-            margin: 20px auto;
+        table {
+            border-collapse: collapse;
+            outline: 1px solid black;
         }
 
-        /* Button style */
-        #startBtn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        td {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            font-size: 60px;
             cursor: pointer;
         }
 
-        /* Status display */
-        #status {
-            text-align: center;
-            margin-top: 10px;
+        th {
+            background: lightgray;
+        }
+
+        tr:nth-child(even) td:nth-child(odd),
+        tr:nth-child(odd) td:nth-child(even) {
+            background: gray;
+        }
+
+        tr:first-child th, tr:last-child th {
+            height: 50px;
+        }
+
+        th:first-child, th:last-child {
+            width: 50px;
         }
     </style>
+    <title>Chessboard</title>
 </head>
 <body>
-    <div id="board" style="width: 400px"></div>
-    <button id="startBtn">Start Game with Stockfish Bot</button>
-    <div id="status"></div>
+    <table>
+        <tr>
+            <th></th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+            <th>G</th>
+            <th>H</th>
+            <th></th>
+        </tr>
+        <tr>
+            <th>8</th>
+            <td class="cell" data-pos="A8">&#9820;</td>
+            <td class="cell" data-pos="B8">&#9822;</td>
+            <td class="cell" data-pos="C8">&#9821;</td>
+            <td class="cell" data-pos="D8">&#9819;</td>
+            <td class="cell" data-pos="E8">&#9818;</td>
+            <td class="cell" data-pos="F8">&#9821;</td>
+            <td class="cell" data-pos="G8">&#9822;</td>
+            <td class="cell" data-pos="H8">&#9820;</td>
+            <th>8</th>
+        </tr>
+        <tr>
+            <th>7</th>
+            <td class="cell" data-pos="A7">&#9823;</td>
+            <td class="cell" data-pos="B7">&#9823;</td>
+            <td class="cell" data-pos="C7">&#9823;</td>
+            <td class="cell" data-pos="D7">&#9823;</td>
+            <td class="cell" data-pos="E7">&#9823;</td>
+            <td class="cell" data-pos="F7">&#9823;</td>
+            <td class="cell" data-pos="G7">&#9823;</td>
+            <td class="cell" data-pos="H7">&#9823;</td>
+            <th>7</th>
+        </tr>
+        <tr>
+            <th>6</th>
+            <td class="cell" data-pos="A6"></td>
+            <td class="cell" data-pos="B6"></td>
+            <td class="cell" data-pos="C6"></td>
+            <td class="cell" data-pos="D6"></td>
+            <td class="cell" data-pos="E6"></td>
+            <td class="cell" data-pos="F6"></td>
+            <td class="cell" data-pos="G6"></td>
+            <td class="cell" data-pos="H6"></td>
+            <th>6</th>
+        </tr>
+        <tr>
+            <th>5</th>
+            <td class="cell" data-pos="A5"></td>
+            <td class="cell" data-pos="B5"></td>
+            <td class="cell" data-pos="C5"></td>
+            <td class="cell" data-pos="D5"></td>
+            <td class="cell" data-pos="E5"></td>
+            <td class="cell" data-pos="F5"></td>
+            <td class="cell" data-pos="G5"></td>
+            <td class="cell" data-pos="H5"></td>
+            <th>5</th>
+        </tr>
+        <tr>
+            <th>4</th>
+            <td class="cell" data-pos="A4"></td>
+            <td class="cell" data-pos="B4"></td>
+            <td class="cell" data-pos="C4"></td>
+            <td class="cell" data-pos="D4"></td>
+            <td class="cell" data-pos="E4"></td>
+            <td class="cell" data-pos="F4"></td>
+            <td class="cell" data-pos="G4"></td>
+            <td class="cell" data-pos="H4"></td>
+            <th>4</th>
+        </tr>
+        <tr>
+            <th>3</th>
+            <td class="cell" data-pos="A3"></td>
+            <td class="cell" data-pos="B3"></td>
+            <td class="cell" data-pos="C3"></td>
+            <td class="cell" data-pos="D3"></td>
+            <td class="cell" data-pos="E3"></td>
+            <td class="cell" data-pos="F3"></td>
+            <td class="cell" data-pos="G3"></td>
+            <td class="cell" data-pos="H3"></td>
+            <th>3</th>
+        </tr>
+        <tr>
+            <th>2</th>
+            <td class="cell" data-pos="A2">&#9817;</td>
+            <td class="cell" data-pos="B2">&#9817;</td>
+            <td class="cell" data-pos="C2">&#9817;</td>
+            <td class="cell" data-pos="D2">&#9817;</td>
+            <td class="cell" data-pos="E2">&#9817;</td>
+            <td class="cell" data-pos="F2">&#9817;</td>
+            <td class="cell" data-pos="G2">&#9817;</td>
+            <td class="cell" data-pos="H2">&#9817;</td>
+            <th>2</th>
+        </tr>
+        <tr>
+            <th>1</th>
+            <td class="cell" data-pos="A1">&#9814;</td>
+            <td class="cell" data-pos="B1">&#9816;</td>
+            <td class="cell" data-pos="C1">&#9815;</td>
+            <td class="cell" data-pos="D1">&#9813;</td>
+            <td class="cell" data-pos="E1">&#9812;</td>
+            <td class="cell" data-pos="F1">&#9815;</td>
+            <td class="cell" data-pos="G1">&#9816;</td>
+            <td class="cell" data-pos="H1">&#9814;</td>
+            <th>1</th>
+        </tr>
+        <tr>
+            <th></th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+            <th>G</th>
+            <th>H</th>
+            <th></th>
+        </tr>
+    </table>
 
-    <script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish/14/stockfish.js"></script>
     <script>
-        var board = null;
-        var game = new Chess();
-        var stockfish = null;
+        let selectedCell = null;
 
-        function startGameWithBot() {
-            // Initialize Stockfish engine
-            stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish/14/stockfish.js');
-
-            // Wait for Stockfish to be ready
-            stockfish.onmessage = function(event) {
-                if (event.data === 'readyok') {
-                    // Stockfish is ready, reset board and start game
-                    board = Chessboard('board', {
-                        draggable: true,
-                        position: 'start',
-                        onDragStart: onDragStart,
-                        onDrop: onDrop
-                    });
-
-                    updateStatus();
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', () => {
+                if (selectedCell) {
+                    movePiece(selectedCell, cell);
+                    selectedCell = null;
+                } else if (cell.innerHTML) {
+                    selectedCell = cell;
+                    cell.style.backgroundColor = 'yellow';
                 }
-            };
-
-            // Load Stockfish
-            stockfish.postMessage('uci');
-            stockfish.postMessage('isready');
-        }
-
-        function onDragStart (source, piece, position, orientation) {
-            // do not pick up pieces if the game is over
-            if (game.game_over()) return false;
-
-            // only pick up pieces for the side to move
-            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-                return false;
-            }
-        }
-
-        function onDrop (source, target) {
-            // see if the move is legal
-            var move = game.move({
-                from: source,
-                to: target,
-                promotion: 'q' // always promote to a queen for example simplicity
             });
+        });
 
-            // illegal move
-            if (move === null) return 'snapback';
-
-            updateStatus();
-
-            // let Stockfish make a move
-            setTimeout(makeStockfishMove, 250);
+        function movePiece(fromCell, toCell) {
+            toCell.innerHTML = fromCell.innerHTML;
+            fromCell.innerHTML = '';
+            fromCell.style.backgroundColor = '';
+            resetBoardColors();
         }
 
-        function makeStockfishMove() {
-            stockfish.postMessage('position fen ' + game.fen());
-            stockfish.postMessage('go depth 1');
-
-            stockfish.onmessage = function(event) {
-                var move = event.data.match(/bestmove\s+(\S+)/);
-                if (!move) return;
-
-                game.move(move[1], { sloppy: true });
-                board.position(game.fen());
-                updateStatus();
-            };
-        }
-
-        function updateStatus () {
-            var status = '';
-
-            var moveColor = 'White';
-            if (game.turn() === 'b') {
-                moveColor = 'Black';
-            }
-
-            // checkmate?
-            if (game.in_checkmate()) {
-                status = 'Game over, ' + moveColor + ' is in checkmate.';
-            }
-
-            // draw?
-            else if (game.in_draw()) {
-                status = 'Game over, drawn position';
-            }
-
-            // game still on
-            else {
-                status = moveColor + ' to move';
-
-                // check?
-                if (game.in_check()) {
-                    status += ', ' + moveColor + ' is in check';
+        function resetBoardColors() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                const pos = cell.getAttribute('data-pos');
+                const row = pos.charCodeAt(1) - '1'.charCodeAt(0);
+                const col = pos.charCodeAt(0) - 'A'.charCodeAt(0);
+                if ((row + col) % 2 === 0) {
+                    cell.style.backgroundColor = 'gray';
+                } else {
+                    cell.style.backgroundColor = '';
                 }
-            }
-
-            document.getElementById('status').textContent = status;
+            });
         }
-
-        document.getElementById('startBtn').addEventListener('click', startGameWithBot);
     </script>
 </body>
 </html>
