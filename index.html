@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game with Stockfish Bot</title>
+    <style>
+        /* Chessboard container styles */
+        #board {
+            width: 400px;
+            margin: 20px auto;
+        }
+
+        /* Button style */
+        #startBtn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Status display */
+        #status {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="board" style="width: 400px"></div>
+    <button id="startBtn">Start Game with Stockfish Bot</button>
+    <div id="status"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stockfish/14/stockfish.js"></script>
+    <script>
+        var board = null;
+        var game = new Chess();
+        var stockfish = null;
+
+        function startGameWithBot() {
+            // Initialize Stockfish engine
+            stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish/14/stockfish.js');
+
+            // Wait for Stockfish to be ready
+            stockfish.onmessage = function(event) {
+                if (event.data === 'readyok') {
+                    // Stockfish is ready, reset board and start game
+                    board = Chessboard('board', {
+                        draggable: true,
+                        position: 'start',
+                        onDragStart: onDragStart,
+                        onDrop: onDrop
+                    });
+
+                    updateStatus();
+                }
+            };
+
+            // Load Stockfish
+            stockfish.postMessage('uci');
+            stockfish.postMessage('isready');
+        }
+
+        function onDragStart (source, piece, position, orientation) {
+            // do not pick up pieces if the game is over
+            if (game.game_over()) return false;
+
+            // only pick up pieces for the side to move
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        function onDrop (source, target) {
+            // see if the move is legal
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // always promote to a queen for example simplicity
+            });
+
+            // illegal move
+            if (move === null) return 'snapback';
+
+            updateStatus();
+
+            // let Stockfish make a move
+            setTimeout(makeStockfishMove, 250);
+        }
+
+        function makeStockfishMove() {
+            stockfish.postMessage('position fen ' + game.fen());
+            stockfish.postMessage('go depth 1');
+
+            stockfish.onmessage = function(event) {
+                var move = event.data.match(/bestmove\s+(\S+)/);
+                if (!move) return;
+
+                game.move(move[1], { sloppy: true });
+                board.position(game.fen());
+                updateStatus();
+            };
+        }
+
+        function updateStatus () {
+            var status = '';
+
+            var moveColor = 'White';
+            if (game.turn() === 'b') {
+                moveColor = 'Black';
+            }
+
+            // checkmate?
+            if (game.in_checkmate()) {
+                status = 'Game over, ' + moveColor + ' is in checkmate.';
+            }
+
+            // draw?
+            else if (game.in_draw()) {
+                status = 'Game over, drawn position';
+            }
+
+            // game still on
+            else {
+                status = moveColor + ' to move';
+
+                // check?
+                if (game.in_check()) {
+                    status += ', ' + moveColor + ' is in check';
+                }
+            }
+
+            document.getElementById('status').textContent = status;
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startGameWithBot);
+    </script>
+</body>
+</html>
