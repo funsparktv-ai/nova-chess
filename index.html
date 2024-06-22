@@ -160,14 +160,24 @@
     </table>
 
     <script>
+        const pieces = {
+            pawn: { white: '&#9817;', black: '&#9823;' },
+            rook: { white: '&#9814;', black: '&#9820;' },
+            knight: { white: '&#9816;', black: '&#9822;' },
+            bishop: { white: '&#9815;', black: '&#9821;' },
+            queen: { white: '&#9813;', black: '&#9819;' },
+            king: { white: '&#9812;', black: '&#9818;' }
+        };
+
         let selectedCell = null;
+        let turn = 'white';
 
         document.querySelectorAll('.cell').forEach(cell => {
             cell.addEventListener('click', () => {
                 if (selectedCell) {
                     movePiece(selectedCell, cell);
                     selectedCell = null;
-                } else if (cell.innerHTML) {
+                } else if (cell.innerHTML && isTurn(cell.innerHTML)) {
                     selectedCell = cell;
                     cell.style.backgroundColor = 'yellow';
                 }
@@ -175,10 +185,26 @@
         });
 
         function movePiece(fromCell, toCell) {
-            toCell.innerHTML = fromCell.innerHTML;
-            fromCell.innerHTML = '';
-            fromCell.style.backgroundColor = '';
-            resetBoardColors();
+            const piece = fromCell.innerHTML;
+            if (isValidMove(fromCell, toCell, piece)) {
+                toCell.innerHTML = piece;
+                fromCell.innerHTML = '';
+                fromCell.style.backgroundColor = '';
+                resetBoardColors();
+                switchTurn();
+            } else {
+                fromCell.style.backgroundColor = '';
+                selectedCell = null;
+            }
+        }
+
+        function isTurn(piece) {
+            return (turn === 'white' && Object.values(pieces).some(p => p.white === piece)) ||
+                   (turn === 'black' && Object.values(pieces).some(p => p.black === piece));
+        }
+
+        function switchTurn() {
+            turn = (turn === 'white') ? 'black' : 'white';
         }
 
         function resetBoardColors() {
@@ -192,6 +218,62 @@
                     cell.style.backgroundColor = '';
                 }
             });
+        }
+
+        function isValidMove(fromCell, toCell, piece) {
+            const fromPos = fromCell.getAttribute('data-pos');
+            const toPos = toCell.getAttribute('data-pos');
+            const fromRow = fromPos.charCodeAt(1) - '1'.charCodeAt(0) + 1;
+            const fromCol = fromPos.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+            const toRow = toPos.charCodeAt(1) - '1'.charCodeAt(0) + 1;
+            const toCol = toPos.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+
+            const rowDiff = Math.abs(toRow - fromRow);
+            const colDiff = Math.abs(toCol - fromCol);
+
+            if (Object.values(pieces.pawn).includes(piece)) {
+                const direction = piece === pieces.pawn.white ? -1 : 1;
+                return (toRow === fromRow + direction && toCol === fromCol && !toCell.innerHTML) ||
+                       (toRow === fromRow + direction && colDiff === 1 && toCell.innerHTML);
+            } else if (Object.values(pieces.rook).includes(piece)) {
+                return (rowDiff === 0 || colDiff === 0) && !isBlocked(fromRow, fromCol, toRow, toCol);
+            } else if (Object.values(pieces.knight).includes(piece)) {
+                return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
+            } else if (Object.values(pieces.bishop).includes(piece)) {
+                return rowDiff === colDiff && !isBlocked(fromRow, fromCol, toRow, toCol);
+            } else if (Object.values(pieces.queen).includes(piece)) {
+                return ((rowDiff === colDiff) || (rowDiff === 0 || colDiff === 0)) && !isBlocked(fromRow, fromCol, toRow, toCol);
+            } else if (Object.values(pieces.king).includes(piece)) {
+                return rowDiff <= 1 && colDiff <= 1;
+            }
+
+            return false;
+        }
+
+        function isBlocked(fromRow, fromCol, toRow, toCol) {
+            const rowDirection = toRow > fromRow ? 1 : -1;
+            const colDirection = toCol > fromCol ? 1 : -1;
+
+            let currentRow = fromRow + rowDirection;
+            let currentCol = fromCol + colDirection;
+
+            while (currentRow !== toRow || currentCol !== toCol) {
+                if (currentRow === toRow) {
+                    currentCol += colDirection;
+                } else if (currentCol === toCol) {
+                    currentRow += rowDirection;
+                } else {
+                    currentRow += rowDirection;
+                    currentCol += colDirection;
+                }
+
+                const cell = document.querySelector(`[data-pos="${String.fromCharCode('A'.charCodeAt(0) + currentCol - 1)}${currentRow}"]`);
+                if (cell && cell.innerHTML) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     </script>
 </body>
