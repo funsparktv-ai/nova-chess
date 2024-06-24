@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chess Game</title>
+    <title>Nova Chess</title>
     <style>
+        body {
+            background-color: #fff; /* Set background color to white */
+        }
         table {
             border-collapse: collapse;
             outline: 1px solid black;
@@ -67,21 +70,39 @@
         .slider {
             width: 200px;
         }
+        .chessboard-container {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            margin-top: 20px; /* Adjust margin as needed */
+        }
     </style>
     <!-- Include the chess.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/stockfish/src/stockfish.js"></script>
 </head>
 <body>
     <div class="controls">
         <div class="slider-container">
             <span class="slider-label">Bot Elo:</span>
-            <input type="range" id="eloSlider" class="slider" min="100" max="2000" value="200" step="100">
-            <span id="eloValue">200</span>
+            <input type="range" id="eloSlider" class="slider" min="100" max="2000" value="600" step="100">
+            <span id="eloValue">100</span>
         </div>
         <button id="resign" class="button">Resign</button>
         <button id="draw" class="button">Draw</button>
+        <button id="resetgamebutton" class="button">Reset Game</button>
+        <button id="hint" class="button">Get Best Move!</button>
+        <div class="button">
+                <a href="https://funsparktv-ai.github.io/howtoplaychess.html" target="_blank">
+                    Learn How to Play Chess!
+                </a>
+            </div>
         <div class="status" id="status"></div>
+        <div class="status" id="playerElo"></div>
+        <div class="status" id="gameEvaluation"></div>
     </div>
+    <div class="chessboard-container">
     <table>
         <tr>
             <th></th>
@@ -204,19 +225,29 @@
             <th></th>
         </tr>
     </table>
-
+    </div>
+    
     <script>
         const chess = new Chess();
         let selectedCell = null;
         const statusElement = document.getElementById('status');
-        let botElo = 200;
-        let playerElo = parseInt(localStorage.getItem('playerElo')) || 1200; // Default player Elo
+        const playerEloElement = document.getElementById('playerElo');
+        const gameEvalElement = document.getElementById('gameEvaluation');
+        let botElo = 600; // Default bot Elo
+        let playerElo = parseInt(localStorage.getItem('playerElo')) || 100; // Default player Elo
 
+        // Update bot Elo and slider display
         document.getElementById('eloSlider').addEventListener('input', function () {
             botElo = parseInt(this.value);
             document.getElementById('eloValue').textContent = botElo;
         });
 
+        // Update player Elo display
+        function updatePlayerEloDisplay() {
+            playerEloElement.textContent = `Player Elo: ${playerElo}`;
+        }
+
+        // Event listeners for each cell to handle piece selection and moves
         document.querySelectorAll('.cell').forEach(cell => {
             cell.addEventListener('click', () => {
                 if (selectedCell) {
@@ -229,25 +260,39 @@
             });
         });
 
+        // Event listener for resign button
         document.getElementById('resign').addEventListener('click', () => {
             const winner = chess.turn() === 'w' ? 'Black' : 'White';
             if (winner === 'Black') {
                 playerElo += 10; // Player wins, increase Elo
                 localStorage.setItem('playerElo', playerElo);
+            } else {
+                playerElo -= 10; // Player loses, decrease Elo
+                localStorage.setItem('playerElo', playerElo);
             }
+            updatePlayerEloDisplay();
             alert(`${winner} wins by resignation.`);
             resetGame();
         });
 
+        // Event listener for draw button
         document.getElementById('draw').addEventListener('click', () => {
             alert('The game is a draw.');
             resetGame();
         });
 
+        // Event listener for reset game button
+        document.getElementById('resetgamebutton').addEventListener('click', () => {
+            alert('The game has been reset.');
+            resetGame();
+        });
+
+        // Function to handle piece movement
         function movePiece(fromCell, toCell) {
             const fromPos = fromCell.getAttribute('data-pos');
             const toPos = toCell.getAttribute('data-pos');
             const move = chess.move({ from: fromPos, to: toPos });
+            evaluateGame();
 
             if (move) {
                 toCell.innerHTML = fromCell.innerHTML;
@@ -262,38 +307,83 @@
                     toCell.innerHTML = piece;
                 }
 
+                // Handle castling
+                if (move.flags.includes('k')) {
+                    if (toPos === 'g1') {
+                        document.querySelector('.cell[data-pos="f1"]').innerHTML = '&#9816;'; // White rook to f1
+                        document.querySelector('.cell[data-pos="h1"]').innerHTML = ''; // Clear original white rook position
+                    } else if (toPos === 'c1') {
+                        document.querySelector('.cell[data-pos="d1"]').innerHTML = '&#9816;'; // White rook to d1
+                        document.querySelector('.cell[data-pos="a1"]').innerHTML = ''; // Clear original white rook position
+                    } else if (toPos === 'g8') {
+                        document.querySelector('.cell[data-pos="f8"]').innerHTML = '&#9822;'; // Black rook to f8
+                        document.querySelector('.cell[data-pos="h8"]').innerHTML = ''; // Clear original black rook position
+                    } else if (toPos === 'c8') {
+                        document.querySelector('.cell[data-pos="d8"]').innerHTML = '&#9822;'; // Black rook to d8
+                        document.querySelector('.cell[data-pos="a8"]').innerHTML = ''; // Clear original black rook position
+                    }
+                }
+
+                // Handle en passant
+                if (move.flags.includes('e')) {
+                    const targetPawnPos = move.color === 'w' ? chess.square(fromPos).down() : chess.square(fromPos).up();
+                    const targetPawnCell = document.querySelector(`.cell[data-pos="${targetPawnPos}"]`);
+                    targetPawnCell.innerHTML = '';
+                }
+
                 // Bot's turn to move
                 if (!chess.game_over() && chess.turn() === 'b') {
                     setTimeout(() => makeBotMove(botElo), 500); // Small delay for realism
                 }
+
             } else {
                 fromCell.style.backgroundColor = '';
                 alert('Invalid move! Try again.');
             }
         }
 
+        // Function to make bot move based on Elo range
         function makeBotMove(elo) {
-            let difficulty = 'hard'; // Adjust difficulty based on Elo if needed
+            let difficulty;
+            if (elo < 200) {
+                difficulty = 'random'; // Below 200 Elo: random moves
+            } else if (elo >= 200 && elo < 600) {
+                difficulty = 'beginner'; // 200 - 600 Elo: beginner (King's Indian only)
+            } else if (elo >= 600 && elo < 1200) {
+                difficulty = 'intermediate'; // 600 - 1200 Elo: intermediate (10+ openings)
+            } else if (elo >= 1200 && elo < 1800) {
+                difficulty = 'master'; // 1200 - 1800 Elo: master (advanced play)
+            } else {
+                difficulty = 'hard'; // 1800+ Elo: advanced (uses more advanced strategies, occasionally uses Stockfish)
+            }
+
             const moves = chess.moves({ difficulty });
             if (moves.length > 0) {
                 const move = moves[Math.floor(Math.random() * moves.length)];
                 chess.move(move);
                 resetBoard();
                 updateStatus();
+
+                // Evaluate game if it's over
+                if (chess.game_over()) {
+                    evaluateGame();
+                }
             }
         }
 
+        // Function to reset board colors
         function resetBoardColors() {
             document.querySelectorAll('.cell').forEach(cell => {
                 cell.style.backgroundColor = '';
             });
         }
 
+        // Function to update game status
         function updateStatus() {
             let status = '';
 
             if (chess.in_checkmate()) {
-                status = `Game over, ${chess.turn() === 'w' ? 'Black' : 'White'} is in checkmate.`;
+                status = `Game over, ${chess.turn() === 'w' ? 'Black' : 'White'} wins by checkmate.`;
             } else if (chess.in_draw()) {
                 status = 'Game over, drawn position.';
             } else {
@@ -306,12 +396,73 @@
             statusElement.textContent = status;
         }
 
+        function evaluateGame() {
+            try {
+                // Function to calculate score for a given color based on piece values
+                function calculateScore(color) {
+                    const pieceValues = {
+                        'p': 1,  // Pawn
+                        'n': 3,  // Knight
+                        'b': 3,  // Bishop
+                        'r': 5,  // Rook
+                        'q': 9   // Queen
+                    };
+
+                    let score = 0;
+                    chess.board().flat().forEach(square => {
+                        if (square && square.color === color) {
+                            score += pieceValues[square.type.toLowerCase()] || 0;
+                        }
+                    });
+                    return score;
+                }
+
+                // Main evaluation logic
+                let evaluation = '';
+
+                // Check if the game is in checkmate
+                if (chess.in_checkmate()) {
+                    evaluation = `${chess.turn() === 'w' ? 'Black' : 'White'} wins by checkmate.`;
+                } else if (chess.in_draw()) {
+                    evaluation = 'The game is a draw.';
+                } else {
+                    // Calculate scores for both sides based on material advantage
+                    const whiteScore = calculateScore('w');
+                    const blackScore = calculateScore('b');
+
+                    // Determine the evaluation based on scores
+                    if (whiteScore > blackScore) {
+                        evaluation = 'White is winning.';
+                    } else if (blackScore > whiteScore) {
+                        evaluation = 'Black is winning.';
+                    } else {
+                        evaluation = 'The game is balanced.';
+                    }
+                }
+
+                // Updating the evaluation result in the DOM
+                const gameEvalElement = document.getElementById('gameEvaluation');
+                if (!gameEvalElement) {
+                    throw new Error('gameEvalElement not found.');
+                }
+                gameEvalElement.textContent = evaluation;
+            } catch (error) {
+                console.error('Error evaluating the game:', error);
+                // Optionally handle or log the error further as needed
+            }
+        }
+
+
+
+        // Function to reset the game
         function resetGame() {
             chess.reset();
             resetBoard();
             updateStatus();
+            gameEvalElement.textContent = '';
         }
 
+        // Function to reset the board to the initial position
         function resetBoard() {
             document.querySelectorAll('.cell').forEach(cell => {
                 cell.innerHTML = '';
@@ -338,15 +489,25 @@
                         const color = char === char.toUpperCase() ? 0 : 1;
                         const piece = pieces[char.toLowerCase()][color];
                         const cell = document.querySelector(`.cell[data-pos="${String.fromCharCode(97 + colIndex)}${8 - rowIndex}"]`);
-                        if (cell) cell.innerHTML = piece;
+                        cell.innerHTML = piece;
                         colIndex++;
                     }
                 });
             });
         }
 
+        // Initial setup
         resetBoard();
+        updatePlayerEloDisplay();
         updateStatus();
+
+        
+        // Event listener for bot difficulty slider
+        document.getElementById('eloSlider').addEventListener('input', function () {
+            botElo = parseInt(this.value);
+            document.getElementById('eloValue').textContent = botElo;
+        });
+
     </script>
 </body>
 </html>
